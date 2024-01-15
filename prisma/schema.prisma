@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model MarketDataBroker {
+  id               String                  @id @default(uuid())
+  name             String
+  website          String
+  apiUrl           String
+  apiKey           String
+  limitsPerSecond  Int
+  limitsPerMinute  Int
+  limitsPerDay     Int
+  limitsPerMonth   Int
+  limitsPerYear    Int
+  DataBrokerSymbol DataBrokerAssetSymbol[]
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  deletedAt        DateTime?
+}
+
+model AssetSymbol {
+  id               String                  @id @default(uuid())
+  name             String
+  symbol           String
+  DataBrokerSymbol DataBrokerAssetSymbol[]
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  deletedAt        DateTime?
+  UserAssetSymbol  UserAssetSymbol[]
+}
+
+model DataBrokerAssetSymbol {
+  id                 String           @id @default(uuid())
+  symbol             AssetSymbol      @relation(fields: [symbolId], references: [id])
+  symbolId           String
+  dataBroker         MarketDataBroker @relation(fields: [dataBrokerId], references: [id])
+  dataBrokerId       String
+  dataBrokerSymbol   String
+  dataBrokerSymbolId String
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  deletedAt          DateTime?
+}
+
+model User {
+  id              String            @id @default(uuid())
+  name            String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  deletedAt       DateTime?
+  UserAssetSymbol UserAssetSymbol[]
+}
+
+model UserAssetSymbol {
+  user      User        @relation(fields: [userId], references: [id])
+  userId    String
+  symbol    AssetSymbol @relation(fields: [symbolId], references: [id])
+  symbolId  String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  deletedAt DateTime?
+
+  @@id([userId, symbolId])
+}

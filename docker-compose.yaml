@@ -1,0 +1,45 @@
+version: '3.9'
+name: 'oma_dhan'
+
+volumes:
+    postgres:
+
+services:
+  installer:
+    container_name: installer
+    image: 'node:20.10.0-alpine'
+    working_dir: /app
+    volumes:
+      - ./:/app
+    command: ["npm", "install"]
+
+  api:
+    build:
+      dockerfile: apps/api/dev.Dockerfile
+    volumes:
+      - ./:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+
+  db:
+    image: "postgres:15.5-alpine3.19"
+    container_name: "oma_folio_db"
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: oma_dhan
+    ports:
+      - "5432:5432"
+
+  ui:
+    build:
+      dockerfile: apps/ui/dev.Dockerfile
+    volumes:
+      - ./:/app
+    ports:
+      - "4200:4200"
+
