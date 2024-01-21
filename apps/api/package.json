@@ -1,0 +1,7 @@
+{
+  "name": "api",
+  "scripts": {
+    "commander": "ts-node --project tsconfig.app.json src/commander.ts",
+    "refresh-asset-symbols": "ts-node --project tsconfig.app.json src/commander.ts refresh-asset-symbols"
+  }
+}

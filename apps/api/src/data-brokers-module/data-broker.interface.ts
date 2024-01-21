@@ -12,5 +12,5 @@ export interface DataBrokerInterface {
 
     getApiUrl(): string;
 
-    fetchSymbols(): AsyncResult<unknown>;
+    fetchSymbols(): AsyncResult<unknown[]>;
 }

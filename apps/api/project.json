@@ -55,7 +55,7 @@
       "options": {
         "jestConfig": "apps/api/jest.config.ts"
       }
-    }
+    },
   },
   "tags": []
 }
