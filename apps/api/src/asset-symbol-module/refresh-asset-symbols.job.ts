@@ -1,10 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../database-module/prisma.service';
+import { Command, CommandRunner } from 'nest-commander';
+import { DataBrokerInterface } from '../data-brokers-module/data-broker.interface';
 
 @Injectable()
-export class RefreshAssetSymbolsJob {
-    constructor(private readonly prisma: PrismaService) {}
+@Command({
+    name: 'refresh-asset-symbols',
+    description: 'Refresh asset symbols',
+})
+export class RefreshAssetSymbolsJob extends CommandRunner {
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly brokerAdapter: DataBrokerInterface,
+    ) {
+        super();
+    }
 
     /**
      * Algo:
@@ -17,14 +27,30 @@ export class RefreshAssetSymbolsJob {
      * 5. If it exists, skip it
      *
      */
-    @Cron(CronExpression.EVERY_DAY_AT_1AM, {
-        name: 'refreshSymbols',
-    })
-    handleCron() {
+    async run(): Promise<void> {
         try {
-            const brokers = this.prisma.marketDataBroker.findMany();
+            console.log('Running: refresh-asset-symbols job');
+            const brokers = await this.prisma.marketDataBroker.findMany();
 
-            console.log(brokers);
+            for (const broker of brokers) {
+                console.log(`Fetching symbols for ${broker.name}`);
+                this.brokerAdapter.broker = broker;
+                const symbols = await this.brokerAdapter.fetchSymbols();
+                if (symbols.err) {
+                    console.log(`Unable to fetch symbols for ${broker.name}`);
+                    console.log(symbols.val);
+                    continue;
+                }
+
+                if (symbols.ok) {
+                    console.log(symbols.val);
+                    console.log(
+                        `Fetched ${symbols.val.length} symbols for ${broker.name}`,
+                    );
+                }
+            }
+
+            console.log('Finished: refresh-asset-symbols job');
         } catch (error) {
             console.log('Unable to fetch symbols.');
             console.log(error);

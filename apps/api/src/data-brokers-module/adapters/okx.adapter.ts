@@ -6,6 +6,7 @@ import { AsyncResult } from '../../async-result.type';
 import { HttpService } from '@nestjs/axios';
 import { OkxConstants } from '../okx.constants';
 import { catchError, firstValueFrom } from 'rxjs';
+import { GetOkxInstrumentsSpotDto } from '../dto/okx/get-okx-instruments-spot.dto';
 
 export class OkxAdapter implements DataBrokerInterface {
     name = 'OKX';
@@ -41,7 +42,7 @@ export class OkxAdapter implements DataBrokerInterface {
         return this.broker.apiUrl;
     }
 
-    async fetchSymbols(): AsyncResult<unknown> {
+    async fetchSymbols(): AsyncResult<GetOkxInstrumentsSpotDto[]> {
         try {
             const fetchInstrumentsUrl = `${this.getApiUrl()}/${
                 OkxConstants.ENDPOINT_PUBLIC_SPOT_INSTRUMENTS
